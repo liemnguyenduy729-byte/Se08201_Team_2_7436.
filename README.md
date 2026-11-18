@@ -4,7 +4,7 @@ Android Kotlin MVP following ASM1: account registration/login, profile, logout, 
 ## Setup
 1. Register the Android application in Firebase using package com.example.asm_se08201_7436_nguyen_duy_liem_bh02258. Put the downloaded configuration in app/google-services.json (ignored by Git).
 2. Enable Authentication > Email/Password and create Cloud Firestore. Select your Firebase project with Firebase CLI: firebase use --add.
-3. Install backend dependencies: cd functions, npm install. Copy .env.example to .env and configure an HTTPS OpenAI-compatible chat completions endpoint and model. The provider named “vilao” has not been identified; do not assume compatibility until its API documentation is confirmed.
+3. Install backend dependencies: cd functions, npm install. Copy .env.example to .env. ViLao is configured from the supplied console example: endpoint https://api.vilao.ai/v1/chat/completions, model occ/claude-opus-4-8. Credentials must be stored separately.
 4. Run firebase functions:secrets:set AI_API_KEY. Never place the AI key in Android source or Git.
 5. Deploy: firebase deploy --only firestore:rules,functions. Cloud Functions deployment may require a billing-enabled Firebase project. Android uses the default us-central1 function region.
 6. Sync Android Studio and run the app. Without the Firebase configuration the app displays setup instructions rather than pretending to authenticate.
@@ -22,3 +22,6 @@ The repository started with the default Android screen. This implementation supp
 
 ## Verification performed
 Backend JavaScript syntax parsed successfully; git diff --check passed. Android assembleDebug was attempted but did not finish within the 120-second execution limit during Gradle setup; APK and runtime behavior are not verified.
+
+## Test ViLao before Firebase setup
+Use Node.js 22+: set AI_API_KEY securely in your local process environment, then run node functions/check-vilao.cjs. This makes one small paid API request, prints only a short answer, and never prints the key. No Firebase account is required for this connectivity check. The Android app still requires Firebase authentication and the deployed backend. Live connectivity has not yet been verified. Rotate any API key posted in chat before use.
