@@ -25,3 +25,6 @@ Backend JavaScript syntax parsed successfully; git diff --check passed. Android 
 
 ## Test ViLao before Firebase setup
 Use Node.js 22+: set AI_API_KEY securely in your local process environment, then run node functions/check-vilao.cjs. This makes one small paid API request, prints only a short answer, and never prints the key. No Firebase account is required for this connectivity check. The Android app still requires Firebase authentication and the deployed backend. Live connectivity has not yet been verified. Rotate any API key posted in chat before use.
+
+## Direct ViLao Android connection
+Open AI Mentor and enter your personal API key in the masked field, then submit a question. The key remains only in memory for the activity session; it is not embedded in the APK, saved in preferences, or committed. Requests run on a worker thread with timeouts and retry messages. This mode works independently of account setup.
