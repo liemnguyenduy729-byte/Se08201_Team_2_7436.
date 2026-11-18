@@ -22,3 +22,5 @@ local.properties
 /functions/.env*
 !functions/.env.example
 /firebase-debug.log
+
+/build-check.log
