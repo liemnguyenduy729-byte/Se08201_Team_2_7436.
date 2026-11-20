@@ -37,12 +37,32 @@ class MainActivity : Activity() {
         this.hint=hint; minHeight=56; setPadding(16,16,16,16); setSingleLine(!hint.contains("Câu hỏi")); if(password) inputType=InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD; page.addView(this)
     }
     private fun button(text: String, action: (Button)->Unit): Button = Button(this).apply { this.text=text; isAllCaps=false; minHeight=56; setTextColor(Color.WHITE); backgroundTintList=android.content.res.ColorStateList.valueOf(Color.rgb(79,70,229)); page.addView(this, LinearLayout.LayoutParams(-1,-2).apply { topMargin=12 }); setOnClickListener { action(this) } }
+
+
     private fun home() {
         screen("AI Study Mentor")
-        label("Học từng bước. Hiểu sâu hơn.",22f)
-        label("Đặt câu hỏi học tập, nhận hướng dẫn từ AI và ôn lại kiến thức đã học.")
-        button("Hỏi AI Mentor") { mentor() }
+
+        label("Học từng bước. Hiểu sâu hơn.", 22f)
+
+        label(
+            "Đặt câu hỏi học tập, nhận hướng dẫn từ AI " +
+                    "và ôn lại kiến thức đã học."
+        )
+
+        button("Hỏi AI Mentor") {
+            mentor()
+        }
+
+        button("Hồ sơ cá nhân") {
+            val intent = android.content.Intent(
+                this,
+                ProfileActivity::class.java
+            )
+            startActivity(intent)
+        }
     }
+
+
     private fun mentor() {
         screen("AI Mentor")
         label("AI có thể trả lời sai. Hãy kiểm tra lại tài liệu học và không gửi thông tin cá nhân.")
