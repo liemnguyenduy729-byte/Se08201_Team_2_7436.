@@ -1,48 +1,11 @@
-
-<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!-- Quyền truy cập Internet -->
-    <uses-permission
-        android:name="android.permission.INTERNET" />
-
-    <!-- Quyền kiểm tra trạng thái mạng -->
-    <uses-permission
-        android:name="android.permission.ACCESS_NETWORK_STATE" />
-
-    <application
-        android:allowBackup="false"
-        android:hardwareAccelerated="false"
-        android:icon="@mipmap/ic_launcher"
-        android:label="AI Study Mentor"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
+    <application android:allowBackup="false" android:label="StudyAI Mentor — Tài khoản"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
-
-        <!-- Màn hình xử lý lỗi -->
-        <activity
-            android:name=".ErrorHandlingActivity"
-            android:exported="false" />
-
-        <!-- Màn hình hồ sơ cá nhân -->
-        <activity
-            android:name=".ProfileActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-
-        <!-- Màn hình chính -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:windowSoftInputMode="adjustResize">
-
+        <activity android:name=".MainActivity" android:exported="true" android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
-
     </application>
-
 </manifest>

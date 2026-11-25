@@ -1,7 +1,7 @@
-# AI Study Mentor
+# StudyAI Mentor — Người 1
 
-Android Kotlin application connected directly to ViLao.
+Mở thư mục đã giải nén bằng Android Studio, đồng bộ Gradle, chọn cấu hình app và bấm Run. Bản demo dùng Android SDK 37 và ID ứng dụng riêng, nên có thể cài cạnh bản nhóm. Tạo tài khoản thử trực tiếp trong bản demo.
 
-Run the app, open AI Mentor, enter your personal API key in the masked field, and submit an academic question. Uses occ/claude-opus-4-8 at https://api.vilao.ai/v1/chat/completions. The key stays in activity memory only and is never saved to disk or embedded in source.
+Phạm vi gồm đăng ký, đăng nhập, hồ sơ, đổi mật khẩu và đăng xuất. Tài khoản lưu trên thiết bị. Bài kiểm thử tích hợp nằm trong StudentAccountsTest.kt.
 
-Includes loading, input validation, network timeout and provider error messages. No account or cloud setup is required. Build with gradlew.bat :app:assembleDebug.
+Khi gộp vào dự án nhóm, thêm StudentAccounts.kt nếu dự án chưa có lớp này. Dùng MainActivity.kt của demo làm nguồn cho các màn hình tài khoản và nối điều hướng sau đăng nhập vào trang chủ của nhóm. Giữ ID StudentAccount làm khóa tài khoản cho lịch sử học tập. Hai ảnh minh họa nằm trong res/drawable-nodpi.
