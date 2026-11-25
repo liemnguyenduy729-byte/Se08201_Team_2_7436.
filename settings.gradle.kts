@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ASM_SE08201_7436_Nguyen_Duy_Liem_BH02258"
+rootProject.name = "baitapnhom"
 include(":app")
  

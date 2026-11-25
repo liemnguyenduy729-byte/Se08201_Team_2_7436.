@@ -13,14 +13,3 @@
 .externalNativeBuild
 .cxx
 local.properties
-/app/build/
-*.jks
-*.keystore
-.env
-/app/google-services.json
-/functions/node_modules/
-/functions/.env*
-!functions/.env.example
-/firebase-debug.log
-
-/build-check.log

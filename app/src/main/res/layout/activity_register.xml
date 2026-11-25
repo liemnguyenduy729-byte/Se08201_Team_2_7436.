@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F7FC"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="AI STUDY MENTOR"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="#203B86"
+            android:gravity="center"
+            android:layout_marginTop="40dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ĐĂNG KÝ TÀI KHOẢN"
+            android:textSize="20sp"
+            android:textColor="#333333"
+            android:gravity="center"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="24dp" />
+
+        <EditText
+            android:id="@+id/edtName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="Nhập họ và tên"
+            android:inputType="textPersonName"
+            android:autofillHints="name" />
+
+        <EditText
+            android:id="@+id/edtEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="Nhập email"
+            android:inputType="textEmailAddress"
+            android:autofillHints="emailAddress"
+            android:layout_marginTop="16dp" />
+
+        <EditText
+            android:id="@+id/edtPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="Nhập mật khẩu (ít nhất 8 ký tự)"
+            android:inputType="textPassword"
+            android:autofillHints="newPassword"
+            android:layout_marginTop="16dp" />
+
+        <EditText
+            android:id="@+id/edtConfirm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="Nhập lại mật khẩu"
+            android:inputType="textPassword"
+            android:autofillHints="newPassword"
+            android:layout_marginTop="16dp" />
+
+        <Button
+            android:id="@+id/btnRegister"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="ĐĂNG KÝ"
+            android:layout_marginTop="24dp" />
+
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="QUAY LẠI" />
+
+    </LinearLayout>
+
+</ScrollView>
