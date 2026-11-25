@@ -3,14 +3,14 @@ plugins {
 }
 
 android {
-    namespace = "com.example.baitapnhom"
+    namespace = "com.example.asm_se08201_7436_nguyen_duy_liem_bh02258"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "com.example.baitapnhom"
-        minSdk = 29
+        applicationId = "com.example.asm_se08201_7436_nguyen_duy_liem_bh02258.mentor"
+        minSdk = 26
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
@@ -41,3 +41,4 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
 }
+
