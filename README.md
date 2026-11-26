@@ -1,7 +1,9 @@
-# AI Study Mentor
+# StudyAI Mentor
 
-Android Kotlin application connected directly to ViLao.
+Ứng dụng Android Kotlin dành cho học sinh. Mở ứng dụng, chọn **Bắt đầu** và đăng ký bằng tên, email và mật khẩu. Tài khoản và lịch sử học tập được lưu trên thiết bị. Trong **Hồ sơ**, học sinh có thể đổi tên, cập nhật email đăng nhập, đổi mật khẩu hoặc đăng xuất.
 
-Run the app, open AI Mentor, enter your personal API key in the masked field, and submit an academic question. Uses occ/claude-opus-4-8 at https://api.vilao.ai/v1/chat/completions. The key stays in activity memory only and is never saved to disk or embedded in source.
+Trong **Hỏi AI**, chọn môn và gửi câu hỏi. Lần gửi đầu tiên trong phiên cần khóa API ViLao. Khóa chỉ được giữ trong bộ nhớ và được xóa khi đăng xuất. Ứng dụng hiển thị lời giải theo từng bước, lưu câu hỏi và câu trả lời trong **Lịch sử học tập**, đồng thời báo lỗi khi yêu cầu mạng hoặc dịch vụ AI gặp sự cố.
 
-Includes loading, input validation, network timeout and provider error messages. No account or cloud setup is required. Build with gradlew.bat :app:assembleDebug.
+Từ màn hình lời giải, chọn **Tạo bài ôn tập** để tạo ba câu tự luận. Có thể mở lại bài ôn đã tạo từ lịch sử khi offline. Trong **Hồ sơ → Nhắc lịch học**, chọn giờ nhắc hằng ngày và cho phép thông báo khi Android yêu cầu.
+
+Chạy cấu hình **app** trong Android Studio hoặc build APK bằng `gradlew.bat :app:assembleDebug`.
