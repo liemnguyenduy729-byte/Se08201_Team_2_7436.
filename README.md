@@ -1,8 +1,8 @@
-# StudyAI Mentor Người 1
+# StudyAI Mentor Người 2
 
-Tiến độ học tập và huy hiệu, chuỗi ngày học.
+Hỏi tiếp về lời giải và tạo bài tương tự.
 
-Trang chủ > Tiến độ học tập. Số liệu dựa trên lời giải trong lịch sử của tài khoản.
+Mở một lời giải rồi sử dụng Hỏi tiếp về lời giải hoặc Tạo bài tương tự. Cần khóa ViLao hợp lệ và Internet để tạo nội dung mới.
 
 Giải nén, mở thư mục chứa settings.gradle.kts trong Android Studio, dùng SDK 37 và chạy cấu hình app. Bản demo dùng mã ứng dụng riêng và tài khoản cục bộ riêng.
 
