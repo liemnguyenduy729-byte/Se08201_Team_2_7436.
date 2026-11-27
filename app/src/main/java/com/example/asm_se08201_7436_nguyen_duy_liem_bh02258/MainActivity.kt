@@ -31,7 +31,7 @@ class MainActivity : Activity() {
     private val tint = Color.rgb(232, 238, 254)
     private val white = Color.WHITE
 
-    private enum class Screen { WELCOME, LOGIN, REGISTER, HOME, ASK, RESULT, HISTORY, PROFILE, PROGRESS }
+    private enum class Screen { WELCOME, LOGIN, REGISTER, HOME, ASK, RESULT, HISTORY, PROFILE, PROGRESS, FLASHCARDS }
     private lateinit var root: LinearLayout
     private lateinit var page: LinearLayout
     private var screen = Screen.WELCOME
@@ -44,6 +44,7 @@ class MainActivity : Activity() {
     private var sessionVersion = 0
     private var resultId = -1L
     private var resultFrom = Screen.ASK
+    private var learningRequestBusy = false
     private var generatingQuizFor: Long? = null
     private var historySubject = -1
     private var query = ""
@@ -177,6 +178,7 @@ class MainActivity : Activity() {
             Screen.RESULT -> result()
             Screen.HISTORY -> history()
             Screen.PROGRESS -> learningProgress()
+            Screen.FLASHCARDS -> flashcards()
             Screen.PROFILE -> profile()
         }
         if (destination in listOf(Screen.HOME, Screen.HISTORY, Screen.PROFILE)) nav()
@@ -307,6 +309,7 @@ class MainActivity : Activity() {
         page.add(header)
         page.add(listItem("◷", "Lịch sử học tập", "Xem lại câu hỏi và lời giải") { show(Screen.HISTORY) }, 16)
         page.add(listItem("◷", "Tiến độ học tập", "Tổng số câu, chuỗi ngày học và huy hiệu") { show(Screen.PROGRESS) }, 10)
+        page.add(listItem("▤", "Thẻ ghi nhớ", "Ôn thẻ theo lịch kể cả offline") { show(Screen.FLASHCARDS) }, 10)
         page.add(listItem("♙", "Hồ sơ cá nhân", "Xem và chỉnh sửa thông tin") { show(Screen.PROFILE) }, 10)
     }
 
@@ -471,6 +474,7 @@ class MainActivity : Activity() {
             }, 12)
         }, 14)
         val owner = requireNotNull(account).id
+        scoredPractice(entry, owner)
         val quizKey = "review:$owner:$resultId"
         val savedQuiz = prefs.getString(quizKey, null)
         if (savedQuiz != null) {
@@ -586,6 +590,212 @@ class MainActivity : Activity() {
     }
 
 
+    private fun requestLearningContent(
+        status: TextView,
+        prompt: String,
+        decode: (String) -> Any,
+        save: (Any) -> Unit
+    ) {
+        if (learningRequestBusy) {
+            status.text = "Đang xử lý yêu cầu trước. Vui lòng chờ."
+            return
+        }
+        if (getSystemService(ConnectivityManager::class.java).activeNetwork == null) {
+            status.text = "Bạn đang mất kết nối mạng. Kết nối lại rồi thử lại."
+            return
+        }
+        if (key.isBlank()) {
+            editKey { requestLearningContent(status, prompt, decode, save) }
+            return
+        }
+        val token = key
+        val session = sessionVersion
+        val id = resultId
+        learningRequestBusy = true
+        getSystemService(InputMethodManager::class.java).hideSoftInputFromWindow(root.windowToken, 0)
+        status.text = "AI đang xử lý…"
+        worker.execute {
+            val response = runCatching { decode(VilaoClient().ask(token, prompt)) }
+            runOnUiThread {
+                if (isDestroyed || isFinishing || session != sessionVersion) return@runOnUiThread
+                learningRequestBusy = false
+                val outcome = response.mapCatching(save)
+                if (outcome.isSuccess && screen == Screen.RESULT && resultId == id) {
+                    show(Screen.RESULT)
+                    Toast.makeText(this, "Đã lưu kết quả.", Toast.LENGTH_SHORT).show()
+                } else if (outcome.isFailure && status.isAttachedToWindow) {
+                    status.text = aiError(requireNotNull(outcome.exceptionOrNull()))
+                }
+            }
+        }
+    }
+
+    private fun parseLearningJson(response: String): JSONObject =
+        JSONObject(response.trim().removePrefix("```json").removePrefix("```").removeSuffix("```").trim())
+
+    private fun revealText(container: LinearLayout, text: String) {
+        val answer = label(text).apply {
+            visibility = View.GONE
+            setTextIsSelectable(true)
+        }
+        lateinit var toggle: TextView
+        toggle = action("Hiện đáp án", false) {
+            val reveal = answer.visibility != View.VISIBLE
+            answer.visibility = if (reveal) View.VISIBLE else View.GONE
+            toggle.text = if (reveal) "Ẩn đáp án" else "Hiện đáp án"
+        }
+        container.add(toggle, 8)
+        container.add(answer, 8)
+    }
+
+
+    private fun scoredPractice(entry: JSONObject, owner: String) {
+        val quizKey = "gradedQuiz:$owner:$resultId"
+        val scoreKey = "gradedAnswers:$owner:$resultId"
+        page.add(card().apply {
+            add(label("Bài tập có chấm điểm", 20, bold = true))
+            val saved = prefs.getString(quizKey, null)
+            if (saved == null) {
+                val status = label("", 14, muted)
+                add(action("Tạo bài trắc nghiệm", false) {
+                    requestLearningContent(status, """
+                        Tạo đúng 3 câu trắc nghiệm dựa trên đề và lời giải. Mỗi câu có 4 lựa chọn khác nhau,
+                        một đáp án đúng và giải thích ngắn. correct là chỉ số nguyên từ 0 đến 3.
+                        Chỉ trả về JSON hợp lệ dạng {"questions":[{"question":"...","options":["...","...","...","..."],"correct":0,"explanation":"..."}]}.
+                        Đề bài: ${entry.getString("question")}
+                        Lời giải: ${entry.getString("answer")}
+                    """.trimIndent(), { response ->
+                        val questions = parseLearningJson(response).getJSONArray("questions")
+                        check(questions.length() == 3 && entries(questions).all { item ->
+                            val options = item.optJSONArray("options")
+                            options != null && options.length() == 4 &&
+                                (0..3).map { options.optString(it).trim() }.let { it.none(String::isBlank) && it.toSet().size == 4 } &&
+                                item.optInt("correct", -1) in 0..3 &&
+                                item.optString("question").isNotBlank() && item.optString("explanation").isNotBlank()
+                        }) { "Bài trắc nghiệm AI trả về chưa hợp lệ. Hãy thử lại." }
+                        questions
+                    }) { quiz -> prefs.edit().putString(quizKey, quiz.toString()).apply() }
+                }, 8)
+                add(status, 4)
+            } else {
+                renderScoredQuiz(this, entries(JSONArray(saved)), scoreKey)
+            }
+        }, 12)
+        val deckKey = "flashcards:$owner"
+        val id = resultId
+        page.add(action("Lưu lời giải thành thẻ ghi nhớ", false) {
+            val cards = JSONArray(prefs.getString(deckKey, "[]"))
+            if (entries(cards).any { it.getLong("id") == id }) {
+                Toast.makeText(this, "Thẻ này đã có trong bộ thẻ.", Toast.LENGTH_SHORT).show()
+                return@action
+            }
+            cards.put(JSONObject().put("id", id)
+                .put("question", entry.getString("question")).put("answer", entry.getString("answer")))
+            prefs.edit().putString(deckKey, cards.toString()).apply()
+            Toast.makeText(this, "Đã lưu vào Thẻ ghi nhớ ở Trang chủ.", Toast.LENGTH_SHORT).show()
+        }, 12)
+    }
+
+    private fun renderScoredQuiz(container: LinearLayout, items: List<JSONObject>, scoreKey: String) {
+        val previous = prefs.getString(scoreKey, null)?.let(::JSONArray)
+        val groups = items.mapIndexed { index, item ->
+            container.add(label("${index + 1}. ${item.getString("question")}", bold = true), 12)
+            val group = RadioGroup(this)
+            val options = item.getJSONArray("options")
+            for (option in 0..3) {
+                group.addView(RadioButton(this).apply {
+                    id = option + 1
+                    text = options.getString(option)
+                })
+            }
+            group.check((previous?.optInt(index, -1) ?: -1) + 1)
+            container.add(group)
+            group
+        }
+        val feedback = column()
+        fun showScore(choices: List<Int>) {
+            feedback.removeAllViews()
+            val score = items.indices.count { choices[it] == items[it].getInt("correct") }
+            feedback.add(label("Điểm: $score/${items.size}", 19, blue, true), 8)
+            items.forEachIndexed { index, item ->
+                val correct = item.getInt("correct")
+                val outcome = if (choices[index] == correct) "Đúng" else "Sai"
+                feedback.add(label("Câu ${index + 1} · $outcome. Đáp án: ${item.getJSONArray("options").getString(correct)}", bold = true), 8)
+                feedback.add(label(item.getString("explanation")), 4)
+            }
+        }
+        container.add(action("Nộp bài") {
+            val choices = groups.map { it.checkedRadioButtonId - 1 }
+            if (choices.any { it !in 0..3 }) {
+                Toast.makeText(this, "Hãy trả lời tất cả các câu trước khi nộp.", Toast.LENGTH_SHORT).show()
+                return@action
+            }
+            prefs.edit().putString(scoreKey, JSONArray(choices).toString()).apply()
+            showScore(choices)
+        }, 10)
+        container.add(feedback)
+        if (previous != null && previous.length() == items.size) showScore(items.indices.map { previous.getInt(it) })
+    }
+
+    private fun flashcards() {
+        title("Thẻ ghi nhớ")
+        val owner = requireNotNull(account).id
+        val deckKey = "flashcards:$owner"
+        val deck = JSONArray(prefs.getString(deckKey, "[]"))
+        val cards = entries(deck)
+        if (cards.isEmpty()) {
+            page.add(label("Mở một lời giải trong Lịch sử để lưu thẻ đầu tiên."), 12)
+            return
+        }
+
+        val today = java.time.LocalDate.now()
+        val intervals = listOf(1L, 3L, 7L, 14L, 30L)
+        fun dueDay(item: JSONObject): Long = item.optLong("dueDay", today.toEpochDay())
+
+        val (due, future) = cards.sortedBy(::dueDay).partition { dueDay(it) <= today.toEpochDay() }
+        page.add(label("${due.size} thẻ cần ôn hôm nay", 18, bold = true), 12)
+        if (due.isEmpty()) page.add(label("Bạn đã ôn hết thẻ đến hạn.", color = muted), 6)
+        due.forEach { item ->
+            page.add(card().apply {
+                add(label(item.getString("question"), bold = true))
+                val answer = label(item.getString("answer")).apply {
+                    visibility = View.GONE
+                    setTextIsSelectable(true)
+                }
+                val ratings = row().apply { visibility = View.GONE }
+                fun rate(remembered: Boolean) {
+                    val level = item.optInt("reviewLevel", 0).coerceIn(0, intervals.size)
+                    val days = if (remembered) intervals[level.coerceAtMost(intervals.lastIndex)] else 1L
+                    val nextLevel = if (remembered) (level + 1).coerceAtMost(intervals.size) else 0
+                    item.put("reviewLevel", nextLevel).put("dueDay", java.time.LocalDate.now().plusDays(days).toEpochDay())
+                    prefs.edit().putString(deckKey, deck.toString()).apply()
+                    show(Screen.FLASHCARDS)
+                    Toast.makeText(this@MainActivity, "Ôn lại sau $days ngày.", Toast.LENGTH_SHORT).show()
+                }
+                ratings.equal(action("Chưa nhớ", false) { rate(false) })
+                ratings.equal(action("Đã nhớ") { rate(true) }, 8)
+                add(action("Hiện đáp án", false) {
+                    answer.visibility = View.VISIBLE
+                    ratings.visibility = View.VISIBLE
+                }, 8)
+                add(answer, 8)
+                add(ratings, 8)
+            }, 10)
+        }
+
+        if (future.isNotEmpty()) {
+            page.add(label("Lịch ôn sắp tới", 18, bold = true), 20)
+            val formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")
+            future.forEach { item ->
+                page.add(card().apply {
+                    add(label(item.getString("question"), bold = true))
+                    add(label("Ôn ngày: ${java.time.LocalDate.ofEpochDay(dueDay(item)).format(formatter)}", 14, muted), 4)
+                    revealText(this, item.getString("answer"))
+                }, 10)
+            }
+        }
+    }
+
     private fun history() {
         title("Lịch sử học tập", false)
         val search = input("⌕   Tìm theo câu hỏi…", query)
@@ -690,6 +900,7 @@ class MainActivity : Activity() {
             askError = ""
             busy = false
             generatingQuizFor = null
+            learningRequestBusy = false
             subject = 0
             historySubject = -1
             show(Screen.LOGIN)
