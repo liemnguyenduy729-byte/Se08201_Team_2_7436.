@@ -6,4 +6,6 @@ Trong **Hỏi AI**, chọn môn và gửi câu hỏi. Lần gửi đầu tiên t
 
 Từ màn hình lời giải, chọn **Tạo bài ôn tập** để tạo ba câu tự luận. Có thể mở lại bài ôn đã tạo từ lịch sử khi offline. Trong **Hồ sơ → Nhắc lịch học**, chọn giờ nhắc hằng ngày và cho phép thông báo khi Android yêu cầu.
 
+Trong **Trang chủ → Tiến độ học tập**, xem tổng số câu, thống kê theo môn, huy hiệu và chuỗi ngày học. Số liệu lấy từ các lời giải đã lưu trong lịch sử của tài khoản.
+
 Chạy cấu hình **app** trong Android Studio hoặc build APK bằng `gradlew.bat :app:assembleDebug`.
