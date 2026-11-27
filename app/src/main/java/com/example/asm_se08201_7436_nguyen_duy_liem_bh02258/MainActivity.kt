@@ -474,6 +474,7 @@ class MainActivity : Activity() {
             }, 12)
         }, 14)
         val owner = requireNotNull(account).id
+        followupConversation(entry, owner)
         scoredPractice(entry, owner)
         val quizKey = "review:$owner:$resultId"
         val savedQuiz = prefs.getString(quizKey, null)
@@ -594,6 +595,7 @@ class MainActivity : Activity() {
         status: TextView,
         prompt: String,
         decode: (String) -> Any,
+        previousTurns: List<Pair<String, String>> = emptyList(),
         save: (Any) -> Unit
     ) {
         if (learningRequestBusy) {
@@ -605,7 +607,7 @@ class MainActivity : Activity() {
             return
         }
         if (key.isBlank()) {
-            editKey { requestLearningContent(status, prompt, decode, save) }
+            editKey { requestLearningContent(status, prompt, decode, previousTurns, save) }
             return
         }
         val token = key
@@ -615,7 +617,7 @@ class MainActivity : Activity() {
         getSystemService(InputMethodManager::class.java).hideSoftInputFromWindow(root.windowToken, 0)
         status.text = "AI đang xử lý…"
         worker.execute {
-            val response = runCatching { decode(VilaoClient().ask(token, prompt)) }
+            val response = runCatching { decode(VilaoClient().ask(token, prompt, previousTurns)) }
             runOnUiThread {
                 if (isDestroyed || isFinishing || session != sessionVersion) return@runOnUiThread
                 learningRequestBusy = false
@@ -648,6 +650,39 @@ class MainActivity : Activity() {
         container.add(answer, 8)
     }
 
+
+    private fun followupConversation(entry: JSONObject, owner: String) {
+        val conversationKey = "followup:$owner:$resultId"
+        val turns = JSONArray(prefs.getString(conversationKey, "[]"))
+        page.add(card().apply {
+            add(label("Hỏi tiếp về lời giải", 20, bold = true))
+            entries(turns).forEach { turn ->
+                add(label("Bạn: ${turn.getString("question")}", 16, bold = true), 12)
+                add(label("AI: ${turn.getString("answer")}").apply {
+                    setTextIsSelectable(true)
+                }, 4)
+            }
+            val questionField = input("Ví dụ: Giải thích kỹ hơn bước 2", multiline = true)
+            add(questionField, 10)
+            val status = label("", 14, muted)
+            add(action("Gửi câu hỏi tiếp") {
+                val question = questionField.text.toString().trim()
+                if (question.length !in 1..4000) {
+                    status.text = "Nhập câu hỏi từ 1 đến 4.000 ký tự."
+                    return@action
+                }
+                val originalTurn = entry.getString("question") to entry.getString("answer")
+                val recentTurns = entries(turns).takeLast(3).map {
+                    it.getString("question") to it.getString("answer")
+                }
+                requestLearningContent(status, question, { it }, listOf(originalTurn) + recentTurns) { answer ->
+                    turns.put(JSONObject().put("question", question).put("answer", answer))
+                    prefs.edit().putString(conversationKey, turns.toString()).apply()
+                }
+            }, 8)
+            add(status, 4)
+        }, 14)
+    }
 
     private fun scoredPractice(entry: JSONObject, owner: String) {
         val quizKey = "gradedQuiz:$owner:$resultId"
