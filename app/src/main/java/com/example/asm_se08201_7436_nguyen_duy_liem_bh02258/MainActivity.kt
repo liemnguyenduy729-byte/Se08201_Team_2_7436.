@@ -31,7 +31,7 @@ class MainActivity : Activity() {
     private val tint = Color.rgb(232, 238, 254)
     private val white = Color.WHITE
 
-    private enum class Screen { WELCOME, LOGIN, REGISTER, HOME, ASK, RESULT, HISTORY, PROFILE }
+    private enum class Screen { WELCOME, LOGIN, REGISTER, HOME, ASK, RESULT, HISTORY, PROFILE, PROGRESS }
     private lateinit var root: LinearLayout
     private lateinit var page: LinearLayout
     private var screen = Screen.WELCOME
@@ -176,6 +176,7 @@ class MainActivity : Activity() {
             Screen.ASK -> ask()
             Screen.RESULT -> result()
             Screen.HISTORY -> history()
+            Screen.PROGRESS -> learningProgress()
             Screen.PROFILE -> profile()
         }
         if (destination in listOf(Screen.HOME, Screen.HISTORY, Screen.PROFILE)) nav()
@@ -305,6 +306,7 @@ class MainActivity : Activity() {
         header.add(action("⌕   Hỏi AI bất kỳ bài học nào…", false) { show(Screen.ASK) }, 20)
         page.add(header)
         page.add(listItem("◷", "Lịch sử học tập", "Xem lại câu hỏi và lời giải") { show(Screen.HISTORY) }, 16)
+        page.add(listItem("◷", "Tiến độ học tập", "Tổng số câu, chuỗi ngày học và huy hiệu") { show(Screen.PROGRESS) }, 10)
         page.add(listItem("♙", "Hồ sơ cá nhân", "Xem và chỉnh sửa thông tin") { show(Screen.PROFILE) }, 10)
     }
 
@@ -543,6 +545,46 @@ class MainActivity : Activity() {
             }, 10)
         }
     }
+
+    private fun learningProgress() {
+        title("Tiến độ học tập")
+        val items = entries(historyFor())
+        page.add(card().apply {
+            add(label("Tổng số câu hỏi: ${items.size}", 20, bold = true))
+            subjects.forEachIndexed { index, name ->
+                add(label("$name: ${items.count { it.optInt("subject", -1) == index }} câu"), 6)
+            }
+        }, 12)
+        val zone = java.time.ZoneId.systemDefault()
+        val days = items.map {
+            java.time.Instant.ofEpochMilli(it.getLong("id")).atZone(zone).toLocalDate()
+        }.toSet()
+        val today = java.time.LocalDate.now(zone)
+        var day = if (today in days) today else today.minusDays(1)
+        var streak = 0
+        while (day in days) {
+            streak++
+            day = day.minusDays(1)
+        }
+        val best = days.sorted().fold(Triple(java.time.LocalDate.MIN, 0, 0)) { state, date ->
+            val length = if (date == state.first.plusDays(1)) state.second + 1 else 1
+            Triple(date, length, maxOf(length, state.third))
+        }.third
+        page.add(card().apply {
+            add(label("Huy hiệu và chuỗi ngày học", 20, bold = true))
+            add(label("Chuỗi hiện tại: $streak ngày · Dài nhất: $best ngày"), 8)
+            add(label("Ngày học được ghi nhận khi có ít nhất một câu hỏi nhận được lời giải."), 6)
+            listOf(
+                "Câu hỏi đầu tiên" to (items.isNotEmpty()),
+                "Ham học hỏi · 10 câu hỏi" to (items.size >= 10),
+                "Học đều · chuỗi 3 ngày" to (best >= 3),
+                "Kiên trì · chuỗi 7 ngày" to (best >= 7)
+            ).forEach { (name, earned) ->
+                add(label(if (earned) "✓ $name" else "○ $name", color = if (earned) blue else muted), 8)
+            }
+        }, 12)
+    }
+
 
     private fun history() {
         title("Lịch sử học tập", false)
