@@ -1,12 +1,9 @@
-# StudyAI Mentor — Người 2
+# StudyAI Mentor
 
-Giải nén rồi mở thư mục này trong Android Studio. Dự án dùng Android SDK 37. Chọn cấu hình app và bấm Run. Bản demo có ID ứng dụng riêng và có thể cài song song với bản nhóm.
+Ứng dụng Android Kotlin dành cho học sinh. Mở ứng dụng, chọn **Bắt đầu** và đăng ký bằng tên, email và mật khẩu. Tài khoản và lịch sử học tập được lưu trên thiết bị. Trong **Hồ sơ**, học sinh có thể đổi tên, cập nhật email đăng nhập, đổi mật khẩu hoặc đăng xuất.
 
-- Chọn môn và gửi câu hỏi để xem lời giải từng bước.
-- Tạo bài ôn gồm 3 câu tự luận từ lời giải, có nút xem đáp án.
-- Dùng nút Mở lời giải gần nhất để kiểm tra lại bài ôn đã lưu.
-- Ứng dụng hiển thị lỗi mất mạng, hết thời gian chờ và lỗi dịch vụ AI.
+Trong **Hỏi AI**, chọn môn và gửi câu hỏi. Lần gửi đầu tiên trong phiên cần khóa API ViLao. Khóa chỉ được giữ trong bộ nhớ và được xóa khi đăng xuất. Ứng dụng hiển thị lời giải theo từng bước, lưu câu hỏi và câu trả lời trong **Lịch sử học tập**, đồng thời báo lỗi khi yêu cầu mạng hoặc dịch vụ AI gặp sự cố.
 
-Cần Internet và khóa ViLao hợp lệ để gửi câu hỏi hoặc tạo bài mới. Ứng dụng hỏi khóa khi gửi lần đầu và chỉ giữ khóa trong phiên.
+Từ màn hình lời giải, chọn **Tạo bài ôn tập** để tạo ba câu tự luận. Có thể mở lại bài ôn đã tạo từ lịch sử khi offline. Trong **Hồ sơ → Nhắc lịch học**, chọn giờ nhắc hằng ngày và cho phép thông báo khi Android yêu cầu.
 
-Khi tích hợp, dùng VilaoClient.kt và các phương thức Hỏi AI, Kết quả và Bài ôn trong MainActivity.kt. Nối từ trang chủ của nhóm và truyền ID tài khoản để lưu dữ liệu theo người dùng. Phối hợp với Người 3 để dùng cùng cấu trúc lưu câu hỏi, lời giải và bài ôn. Khai báo INTERNET và ACCESS_NETWORK_STATE trong manifest.
+Chạy cấu hình **app** trong Android Studio hoặc build APK bằng `gradlew.bat :app:assembleDebug`.
