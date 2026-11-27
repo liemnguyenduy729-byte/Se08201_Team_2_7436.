@@ -10,6 +10,7 @@ class VilaoClient {
         val connection = URL("https://api.vilao.ai/v1/chat/completions").openConnection() as HttpURLConnection
         try {
             connection.requestMethod="POST"
+            connection.instanceFollowRedirects = false
             connection.connectTimeout=15000
             connection.readTimeout=90000
             connection.doOutput=true
@@ -20,7 +21,8 @@ class VilaoClient {
             connection.outputStream.use { it.write(body.toString().toByteArray(Charsets.UTF_8)) }
             if(connection.responseCode !in 200..299) throw IllegalStateException(when(connection.responseCode) { 401,403 -> "Khóa API không hợp lệ hoặc không có quyền truy cập."; 429 -> "Đã vượt giới hạn yêu cầu. Vui lòng thử lại sau."; else -> "Dịch vụ AI đang lỗi. Vui lòng thử lại." })
             val data=connection.inputStream.bufferedReader().use { it.readText() }
-            val answer=JSONObject(data).getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content")
+            val answer = JSONObject(data).optJSONArray("choices")?.optJSONObject(0)
+                ?.optJSONObject("message")?.opt("content") as? String ?: ""
             if(answer.isBlank()) throw IllegalStateException("AI chưa trả về câu trả lời. Hãy thử lại.")
             return answer
         } finally { connection.disconnect() }
